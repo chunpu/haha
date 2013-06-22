@@ -1,0 +1,24 @@
+{
+  "name": "haha",
+  "version": "0.0.0",
+  "description": "High Available web framework",
+  "main": "connect.js",
+  "dependencies": {
+    "fitemp": "~0.0.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/chunpu/haha.git"
+  },
+  "keywords": [
+    "web-framework",
+    "high-available"
+  ],
+  "author": "ft",
+  "license": "BSD",
+  "readmeFilename": "readme.md"
+}
