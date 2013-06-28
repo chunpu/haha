@@ -3,20 +3,47 @@ var url = require('url');
 var utils = require('./utils.js');
 var response = require('./response.js');
 var setting = require('./setting.js');
+var Route = require('./route.js');
 
 var proto = {};
 
-proto.use = function(route) {
-  var fn = arguments[arguments.length-1];
-  var p = route;
-  if (arguments.length === 1) {
-    route = '/';
-  }
-  this.stack.push({
-    pathname: p,
-    fn: fn
-  });
+['use', 'all', 'get', 'post', 'head', 'put', 'delete'].forEach(function(method) {
 
+  proto[method] = function(pathname, fn) {
+
+    if (method === 'get' && arguments.length === 1 && typeof pathname === 'string') {
+      return setting[pathname];
+    }
+
+    if (!fn) {
+      fn = pathname;
+    }
+
+
+    if (typeof pathname !== 'string' && !(pathname instanceof RegExp)) {
+      pathname = '*';
+    }
+
+    var route = new Route(pathname);
+
+    if (method === 'all' || method === 'use') {
+      method = 'ALL';
+    }
+
+    this.stack.push({
+      pathname: pathname,
+      fn: fn,
+      route: route,
+      method: method.toUpperCase()
+    });
+  }
+
+});
+
+proto.showRoute = function() {
+  for (var i = 0, layer; layer = this.stack[i]; i++) {
+    console.log(layer.pathname, layer.route, layer.method);
+  }
 }
 
 proto.handle = function(req, res, next) {
@@ -42,13 +69,34 @@ proto.handle = function(req, res, next) {
     }
     var layer = stack[index++];
 
+    if ( (layer.method === 'ALL' || method === layer.method) && layer.route.test(pathname)) {
+      // check pass
+      
+      utils.merge(res, response); // add more function to response
+      req.params = layer.route.getParams(pathname);
+      layer.fn(req, res, tryMatch);
+      return;
+     
+    }
+
+    tryMatch();
+    
+
+      
+
+    /*
     if (!('method' in layer)) {
       // middleware
       flag = true;
     }
 
     if (method === layer.method && !flag) {
+
       var p = layer.pathname;
+      //var route = new Route(p);
+      //console.log(route);
+      //console.log(p, route.route);
+
       if (p instanceof RegExp) {
         // regExp
         if (pathname.match(p)) {
@@ -73,18 +121,12 @@ proto.handle = function(req, res, next) {
           }
           metaStr += '])';
           
-          //console.log(metaStr);
-          //console.log(regStr);
           regStr = regStr.replace(new RegExp(metaStr, 'g'), "\\$1");
-          //console.log(regStr);
           var reg = new RegExp(regStr);
 
           var _reg = new RegExp(':\\w+', 'g');
-          //console.log(reg);
           var keys = p.match(_reg);
-          //console.log(params);
           var result = pathname.match(reg); // result
-          //console.log(result);
 
           if (keys.length > 0 && result && result.length > 0) {
             for (var i = 0; i < keys.length; i++) {
@@ -92,27 +134,24 @@ proto.handle = function(req, res, next) {
               params[k] = result[i+1];
             }
             flag = true;
-            //console.log(obj);
             
           }
         }
       }
 
 
-    } 
+    }
 
     if (flag === true) {
-      //console.log(pathname, params);
       utils.merge(res, response); // add more function to response
       req.params = params;
       layer.fn(req, res, tryMatch);
       return;
     }
-
-    tryMatch();
     
-  
+    tryMatch();
    
+    */ 
   }
 }
 
@@ -121,21 +160,61 @@ proto.listen = function() {
   return server.listen.apply(server, arguments); // cannot understand
 }
 
-proto.set = function(k, v) {
-  setting[k] = v;
+// global setting
+proto.disable = function(k) {
+  delete setting[k]; // not false like express
+  return this;
 }
 
-// route
+proto.enabled = function(k) {
+  if (k in setting) {
+    return true;
+  }
+  return false;
+}
 
-proto.get = function(p) {
-  var fn = arguments[arguments.length-1];
-  var pathname = null;
-  var stack = this.stack;
-  stack.push({
-    pathname: p,
-    method: 'GET',
-    fn: fn
-  });
+proto.disabled = function(k) {
+  if (k in setting) {
+    return false;
+  }
+  return true;
+}
+
+proto.enable = function(k) {
+  setting[k] = true;
+  return this;
+}
+
+proto.set = function(k, v) {
+  //console.log(v);
+  if (v === undefined) {
+     this.enable(k);
+     return this;
+  }
+  setting[k] = v;
+  return this;
+}
+
+// configure
+
+proto.configure = function(p0) {
+  var cb = arguments[arguments.length-1];
+  if (typeof cb !== 'function') {
+    throw new TypeError('last argument should be function');
+  }
+
+  var envFlag = false;
+  if (typeof p0 === 'string') {
+    envFlag = this.get(p0);
+  } else if (p0 === cb) {
+    envFlag = true;
+  }
+  
+  if (envFlag) {
+    cb();
+    return this;
+  }
+  
 }
 
 module.exports = proto;

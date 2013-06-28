@@ -1,5 +1,4 @@
 var setting = require('./setting.js');
-var ejs = require('ejs');
 var utils = require('./utils');
 var fs = require('fs');
 
@@ -10,12 +9,6 @@ response.json = function(json) {
   this.end(JSON.stringify(json, null, '\t'));
 }
 
-function $(file, opt) {
-   var str = fs.readFileSync('./views/'+file+'.html')+'';
-   opt.$ = $;
-   str = ejs.render(str, opt);
-   return str;
-}
 
 response.render = function(filepath, _opt) {
 
@@ -35,7 +28,7 @@ response.render = function(filepath, _opt) {
     var file = fs.readFileSync(filepath)+'';
     var layout = getLayout(views);
     file = layout.replace(/<<\s*body\s*>>/, file);
-    return(ejs.render(file, opt));
+    //return(ejs.render(file, opt));
 
   })(filepath);
   // ?????
@@ -49,7 +42,7 @@ function getLayout(views) {
   var filepath = views + '/layout.html';
   var layout = fs.readFileSync(filepath)+'';
    
-  return ejs.render(layout, {filename: filepath});
+  //return ejs.render(layout, {filename: filepath});
 }
 
 module.exports = response;

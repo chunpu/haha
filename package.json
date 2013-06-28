@@ -1,6 +1,6 @@
 {
   "name": "haha",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "High Available web framework",
   "main": "connect.js",
   "dependencies": {
@@ -18,7 +18,12 @@
     "web-framework",
     "high-available"
   ],
-  "author": "ft",
+  "author": {
+    "name": "ft"
+  },
   "license": "BSD",
-  "readmeFilename": "readme.md"
+  "readmeFilename": "readme.md",
+  "readme": "interested in express and just realize some of these APIs like express\n\nnow preparing to add some inside middleware\n",
+  "_id": "haha@0.0.0",
+  "_from": "haha"
 }
