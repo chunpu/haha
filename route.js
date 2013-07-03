@@ -39,7 +39,6 @@ Render.prototype.getParams = function(pathname) {
     }
   }
 
-  console.log(params);
   return params;
 }
 

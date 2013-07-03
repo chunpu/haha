@@ -9,6 +9,14 @@ response.json = function(json) {
   this.end(JSON.stringify(json, null, '\t'));
 }
 
+response.redirect = function(status, url) {
+  if (url === undefined) {
+    url = status;
+    status = '302';
+  }
+  this.writeHead(status, {'Location': url});
+  this.end();
+}
 
 response.render = function(filepath, _opt) {
 

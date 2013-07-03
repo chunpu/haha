@@ -2,7 +2,6 @@ var path = require('path');
 var fs = require('fs');
 
 module.exports = function(root, options) {
-  console.log(root);
   return function(req, res, next) {
     var filepath =root + req.pathname;
     fs.readFile(filepath, function(err, data) {
@@ -27,5 +26,9 @@ var mime = {
   '.css': 'text/css',
   '.js': 'text/javascript',
   '.png': 'image/png',
-  '.jpg': 'image/jpg'
+  '.jpg': 'image/jpg',
+  '.ttf': 'application/x-font-ttf',
+  '.json': 'application/json',
+  '.gif': 'image/gif',
+  '.mp3': 'audio/mpeg'
 }

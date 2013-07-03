@@ -2,6 +2,7 @@ var http = require('http');
 var url = require('url');
 var utils = require('./utils.js');
 var response = require('./response.js');
+var request = require('./request.js');
 var setting = require('./setting.js');
 var Route = require('./route.js');
 
@@ -73,6 +74,24 @@ proto.handle = function(req, res, next) {
       // check pass
       
       utils.merge(res, response); // add more function to response
+      utils.merge(req, new request(req)); // may be fixed
+
+      res.jsonp = function(callbackname, obj) {
+        // lie on req
+        if (obj === undefined) {
+          obj = callbackname;
+          callbackname = 'callback';
+        }
+        var functionname = req.query[callbackname];
+        res.writeHead(200, {'Content-Type': 'text/javascript'});
+        try {
+          var output = functionname + '(' + JSON.stringify(obj) + ')';
+        } catch(e) {
+          var output = 'wrong obj type';
+        }
+        res.end(output);
+      }
+
       req.params = layer.route.getParams(pathname);
       layer.fn(req, res, tryMatch);
       return;
@@ -80,78 +99,7 @@ proto.handle = function(req, res, next) {
     }
 
     tryMatch();
-    
 
-      
-
-    /*
-    if (!('method' in layer)) {
-      // middleware
-      flag = true;
-    }
-
-    if (method === layer.method && !flag) {
-
-      var p = layer.pathname;
-      //var route = new Route(p);
-      //console.log(route);
-      //console.log(p, route.route);
-
-      if (p instanceof RegExp) {
-        // regExp
-        if (pathname.match(p)) {
-          flag = true;
-        }
-
-      } else if (typeof p === 'string') {
-
-        // str
-        var _arr = p.split(':');
-        var params = {};
-        if (_arr.length === 1 && pathname === p) {
-          // normal pathname
-          flag = true;
-        } else if (_arr.length > 1) {
-          // path width params
-
-          var regStr = p.replace(/:\w+/g, "(\\w+)");
-          var meta = "[]{}^$|*.?", metaStr = '([';
-          for (var i = 0; i < meta.length; i++) {
-            metaStr += "\\"+meta[i];
-          }
-          metaStr += '])';
-          
-          regStr = regStr.replace(new RegExp(metaStr, 'g'), "\\$1");
-          var reg = new RegExp(regStr);
-
-          var _reg = new RegExp(':\\w+', 'g');
-          var keys = p.match(_reg);
-          var result = pathname.match(reg); // result
-
-          if (keys.length > 0 && result && result.length > 0) {
-            for (var i = 0; i < keys.length; i++) {
-              var k = keys[i].substring(1, keys[i].length);
-              params[k] = result[i+1];
-            }
-            flag = true;
-            
-          }
-        }
-      }
-
-
-    }
-
-    if (flag === true) {
-      utils.merge(res, response); // add more function to response
-      req.params = params;
-      layer.fn(req, res, tryMatch);
-      return;
-    }
-    
-    tryMatch();
-   
-    */ 
   }
 }
 
