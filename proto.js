@@ -76,21 +76,7 @@ proto.handle = function(req, res, next) {
       utils.merge(res, response); // add more function to response
       utils.merge(req, new request(req)); // may be fixed
 
-      res.jsonp = function(callbackname, obj) {
-        // lie on req
-        if (obj === undefined) {
-          obj = callbackname;
-          callbackname = 'callback';
-        }
-        var functionname = req.query[callbackname];
-        res.writeHead(200, {'Content-Type': 'text/javascript'});
-        try {
-          var output = functionname + '(' + JSON.stringify(obj) + ')';
-        } catch(e) {
-          var output = 'wrong obj type';
-        }
-        res.end(output);
-      }
+      res._req = req; // inside attribute, jsonp lie on req
 
       req.params = layer.route.getParams(pathname);
       layer.fn(req, res, tryMatch);
