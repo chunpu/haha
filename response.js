@@ -43,7 +43,7 @@ res.get = function(name) {
 
 res.set = function(name, value) {
   if (typeof value === 'string' || Array.isArray(value)) {
-    return res.setHeader(name, value);
+    return this.setHeader(name, value);
   } else if (typeof value === "object") {
     for (var key in value) {
       arguments.callee(key, value[key]);
