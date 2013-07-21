@@ -14,7 +14,7 @@ describe('res', function() {
       request(app)
         .get('/')
         .expect('Content-Type', 'text/html')
-        .expect(201, done);
+        .expect(200, done);
     });
   });
 });
