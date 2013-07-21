@@ -3,9 +3,21 @@ var fs = require('fs');
 
 module.exports = function(root, options) {
   return function(req, res, next) {
-    var filepath =root + req.pathname;
+    var filepath = root + req.pathname;
+    send(filepath);
+    function send(filepath) {
+
     fs.readFile(filepath, function(err, data) {
       if (err) {
+        if (err.code === 'EISDIR') {
+          if (req.pathname.lastIndexOf('/') === req.pathname.length - 1) {
+            // find the index file
+            send(filepath + 'index.html');
+            return;
+          }
+          res.redirect(req.pathname + '/');
+          return;
+        }
         next(err);
       } else {
         var extname = path.extname(req.pathname);
@@ -16,6 +28,8 @@ module.exports = function(root, options) {
         res.end(data);
       }
     });
+    }
+
   }
 }
 
