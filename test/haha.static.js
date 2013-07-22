@@ -57,6 +57,7 @@ describe('haha.static()', function() {
       var file = fs.readFileSync(__dirname + '/assets/index.html') + '';
       request(app).get('/')
         .expect(file)
+        .expect('content-type', 'text/html')
         .expect(200, done)
     })
   });

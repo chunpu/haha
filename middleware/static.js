@@ -36,7 +36,7 @@ module.exports = function(root, options) {
       } else {
         fs.stat(filepath, function(err, stat) {
           var mtime = stat.mtime;
-          var extname = path.extname(req.pathname);
+          var extname = path.extname(filepath);
           var mimeType = (function getMime(extname) {
             return mime[extname] || 'text/plain';
           })(extname);
