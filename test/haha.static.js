@@ -16,11 +16,24 @@ describe('haha.static()', function() {
   describe('GET /hello.html', function() {
 
     it('should return mime "text/html"', function(done) {
-      var file = fs.readFileSync(__dirname + '/assets/hello.html') + '';
+      var helloHtml = __dirname + '/assets/hello.html';
+      var file = fs.readFileSync(helloHtml) + '';
+      var mtime = fs.statSync(helloHtml).mtime;
       request(app).get('/hello.html')
-        .expect('Content-Type', 'text/html')
+        .expect('content-type', 'text/html')
+        .expect('last-modified', mtime.toUTCString())
         .expect(file)
         .expect(200, done);
+    });
+  });
+
+  describe('GET /hello.html with if-modified-since', function() {
+    it('should return 304 not modified', function(done) {
+      var helloHtml = __dirname + '/assets/hello.html';
+      var mtime = fs.statSync(helloHtml).mtime;
+      request(app).get('/hello.html')
+        .set('if-modified-since', mtime.toUTCString())
+        .expect(304, done);
     });
   });
 

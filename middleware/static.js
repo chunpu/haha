@@ -2,9 +2,23 @@ var path = require('path');
 var fs = require('fs');
 
 module.exports = function(root, options) {
+  options = options || {};
   return function(req, res, next) {
     var filepath = root + req.pathname;
     send(filepath);
+    if ('if-modified-since' in req.headers) {
+      var browserMtime = req.headers['if-modified-since'];
+      fs.stat(filepath, function(err, stat) {
+        if (err) {
+          next(err);
+        }
+        if (stat.mtime.toUTCString() == browserMtime) {
+          res.writeHead(304);
+          res.end();
+        }
+      });
+    }
+
     function send(filepath) {
 
     fs.readFile(filepath, function(err, data) {
@@ -20,12 +34,19 @@ module.exports = function(root, options) {
         }
         next(err);
       } else {
-        var extname = path.extname(req.pathname);
-        var mimeType = (function getMime(extname) {
-          return mime[extname] || 'text/plain';
-        })(extname);
-        res.writeHead(200, {'Content-Type': mimeType});
-        res.end(data);
+        fs.stat(filepath, function(err, stat) {
+          var mtime = stat.mtime;
+          var extname = path.extname(req.pathname);
+          var mimeType = (function getMime(extname) {
+            return mime[extname] || 'text/plain';
+          })(extname);
+          res.writeHead(200, {
+            'Content-Type': mimeType,
+            'Last-Modified': mtime.toUTCString(),
+            'Server': options.server || 'HA-static-^_^'
+          });
+          res.end(data);
+        });
       }
     });
     }
