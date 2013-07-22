@@ -11,7 +11,7 @@ app.get(function(req, res) {
   res.end('404 not found');
 });
 
-describe('haha.static', function() {
+describe('haha.static()', function() {
 
   describe('GET /hello.html', function() {
 
