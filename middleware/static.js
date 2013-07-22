@@ -18,6 +18,7 @@ module.exports = function(root, options) {
           res.redirect(req.pathname + '/');
           return;
         }
+        console.log(err);
         next(err);
       } else {
         var extname = path.extname(req.pathname);
